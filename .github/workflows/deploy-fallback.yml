@@ -1,11 +1,8 @@
-name: Deploy
+name: Deploy (Fallback)
 
 on:
-  push:
-    branches: [ main, master ]
-  pull_request:
-    branches: [ main, master ]
-
+  workflow_dispatch: # Manual trigger only
+  
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -37,9 +34,9 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-pnpm-store-
           
-    - name: Install dependencies
+    - name: Install dependencies (no frozen lockfile)
       working-directory: ./task-manager
-      run: pnpm install --frozen-lockfile
+      run: pnpm install --no-frozen-lockfile
         
     - name: Build project
       working-directory: ./task-manager
@@ -48,3 +45,14 @@ jobs:
     - name: Run linting
       working-directory: ./task-manager
       run: pnpm run lint
+      
+    - name: Update lockfile (if changed)
+      working-directory: ./task-manager
+      run: |
+        if [ -n "$(git diff --name-only pnpm-lock.yaml)" ]; then
+          echo "Lockfile was updated during install"
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add pnpm-lock.yaml
+          git commit -m "Update pnpm-lock.yaml" || echo "No changes to commit"
+        fi
