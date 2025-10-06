@@ -26,7 +26,7 @@ export default function Filters({ filters, onChange }: FiltersProps) {
 			/>
 			<select
 				value={filters.status}
-				onChange={e => onChange(prev => ({ ...prev, status: e.target.value as any }))}
+				onChange={e => onChange(prev => ({ ...prev, status: e.target.value as TaskStatus | "all" }))}
 				className="rounded-md border border-black/10 dark:border-white/15 bg-white/80 dark:bg-black/20 px-3 py-2"
 			>
 				{statusOptions.map(opt => (
